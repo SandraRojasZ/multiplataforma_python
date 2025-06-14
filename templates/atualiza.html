@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Atualizar Cliente</title>
+</head>
+<body>
+    {% include 'navbar_public.html' %}
+    <main>
+        <h1>Atualizar Cliente</h1>
+        <form id="updateForm">
+            <input type="hidden" id="documentId" value="{{ document_id }}">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" required>
+            <label for="idade">Idade:</label>
+            <input type="number" id="idade" required>
+            <button type="submit">Atualizar</button>
+            <p id="message"></p>
+        </form>
+    </main>
+
+    <script>
+        async function fetchCliente() {
+            const documentId = document.getElementById('documentId').value;
+            const response = await fetch(`/read/${documentId}`);
+            const cliente = await response.json();
+            if (response.ok) {
+                document.getElementById('nome').value = cliente.nome;
+                document.getElementById('idade').value = cliente.idade;
+            } else {
+                alert("Erro ao carregar dados do cliente.");
+            }
+        }
+
+        document.getElementById('updateForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const documentId = document.getElementById('documentId').value;
+            const nome = document.getElementById('nome').value;
+            const idade = parseInt(document.getElementById('idade').value);
+
+            const response = await fetch(`/update/${documentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nome, idade }),
+            });
+
+            const messageElement = document.getElementById('message');
+            if (response.ok) {
+                messageElement.textContent = 'Cliente atualizado com sucesso!';
+                messageElement.style.color = 'green';
+            } else {
+                messageElement.textContent = 'Erro ao atualizar cliente.';
+                messageElement.style.color = 'red';
+            }
+        });
+
+        window.onload = fetchCliente;
+    </script>
+</body>
+</html>

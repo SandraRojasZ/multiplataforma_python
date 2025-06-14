@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Lista de Clientes</title>
+</head>
+<body>
+    {% include 'navbar_public.html' %}
+    <main>
+        <h1>Lista de Clientes</h1>
+        <div id="clientesContainer">
+            <table id="clientesTable">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Idade</th>
+                        <th>Atualizar</th>
+                        <th>Deletar</th>
+                    </tr>
+                </thead>
+                <tbody id="clientesList"></tbody> <!-- Lista de clientes será preenchida aqui -->
+            </table>
+        </div>
+        {% include 'footer.html' %}
+    </main>    
+
+    <script>
+        async function fetchClientes() {
+            const response = await fetch('/clientes'); // rota para obter todos os clientes
+            const clientes = await response.json();
+            const clientesList = document.getElementById('clientesList');
+
+            clientesList.innerHTML = ''; // Limpa a lista antes de adicionar novos itens
+
+            clientes.forEach(cliente => {
+                const row = document.createElement('tr'); // Cria uma nova linha da tabela
+                row.innerHTML = `
+                    <td>${cliente.nome}</td>
+                    <td>${cliente.idade}</td>
+                    <td><button onclick="handleUpdate('${cliente.id}')">Atualizar</button></td>
+                    <td><button onclick="handleDelete('${cliente.id}')">Deletar</button></td>
+                `;
+                clientesList.appendChild(row); // Adiciona a linha ao corpo da tabela
+            });
+        }
+
+        async function handleDelete(id) {
+            const confirmacao = confirm("Você tem certeza que deseja deletar a informação?");
+            if (confirmacao) {
+                try {
+                    await fetch(`/delete/${id}`, { method: 'DELETE' });
+                    alert("Dados deletados com sucesso!");
+                    fetchClientes(); // Atualiza a lista após a exclusão
+                } catch (error) {
+                    alert("Erro ao deletar lançamento: " + error.message);
+                }
+            } else {
+                alert("Ação cancelada.");
+            }
+        }
+
+        function handleUpdate(id) {
+            // Redireciona para a página de atualização (você deve implementar essa página)
+            window.location.href = `/atualiza/${id}`;
+        }
+
+        // Chama a função para buscar os clientes quando a página for carregada
+        window.onload = fetchClientes;
+    </script>
+
+    <style>
+        .header {
+            display: flex;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        button {
+            margin-left: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+    </style>
+</body>
+</html>
